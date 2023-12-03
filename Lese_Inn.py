@@ -10,12 +10,12 @@ def lese_inn(filbane):
     
         for linje in data:
             if linje[0] not in data_landene:
-                if linje[1] == "":
+                if len(linje[1]) > 3 or linje[1] == "":
                     continue    
                 else:
                     data_landene[linje[0]] = {linje[2] : linje[3]}
             else:
-                if linje[1] == "":
+                if len(linje[1]) > 3 or linje[1] == "":
                     continue    
                 else:
                     data_landene[linje[0]][linje[2]] = linje[3] 
