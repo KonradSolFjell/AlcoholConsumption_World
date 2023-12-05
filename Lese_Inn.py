@@ -22,4 +22,7 @@ def lese_inn(filbane):
                     
     
     return data_landene
+    
+                
+
             
