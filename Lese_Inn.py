@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Nov 21 11:15:30 2023
-
-@author: kofra001
-"""
-
 def lese_inn(filbane):
     import csv
     global data_landene
@@ -17,20 +10,18 @@ def lese_inn(filbane):
     
         for linje in data:
             if linje[0] not in data_landene:
-                if linje[1] == "":
+                if not len(linje[1]) == 3:
                     continue    
                 else:
                     data_landene[linje[0]] = {linje[2] : linje[3]}
             else:
-                if linje[1] == "":
+                if not len(linje[1]) == 3:
                     continue    
                 else:
                     data_landene[linje[0]][linje[2]] = linje[3] 
                     
     
     return data_landene
-
-print(lese_inn("alc_consumption_liters_per_capita.csv"))
     
                 
 
