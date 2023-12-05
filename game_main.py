@@ -7,17 +7,19 @@ csv_data = lese_inn("alc_consumption_liters_per_capita.csv")
 
 class TipsyTriviaGame:
     def __init__(self, root):
+        #Defining window, window title and resolution
         self.root = root
         self.root.title("Tipsy Trivia")
         self.root.geometry("700x300")
 
-        self.score = 0
+        #Defining necessary game variables
         self.round_number = 1
         self.csv_data = csv_data
         self.current_country = remove_chars(str(random.sample(list(csv_data.keys()), 1)), "'[]")
         self.countries_played = []
         self.player_hp = 5
 
+        #Creating main menu and displaying it
         self.label = tk.Label(root, text="Welcome to Tipsy Trivia!")
         self.label.pack(pady=10)
 
@@ -36,13 +38,16 @@ class TipsyTriviaGame:
         self.update_display()
 
     def game_init(self, root):
-
+        
+        #Hiding main menu buttons, could've used a generic function to hide all elements but decided against it as the code doesn't call pack_forget() all too much
         self.easy_button.pack_forget()
         self.medium_button.pack_forget()
         self.hard_button.pack_forget()
 
+        #Calling select_years() here because it's the first round and advance_round() (which also contains select_years()) hasn't been called yet
         self.years = self.select_years(self.difficulty)
 
+        #Configuring and creating game menu elements with the buttons calling check_answer() with their respective statements as paramterers. Also constructing buttons that will only be needed in the second round (but not displaying them), just because I figured it was a convenient place to do so. 
         self.health_label = tk.Label(root, text=f"Your HP: {self.player_hp}")
         self.health_label.pack(pady=5)
 
@@ -63,6 +68,7 @@ class TipsyTriviaGame:
         self.same_button = tk.Button(root, text="Same", command=lambda: self.check_answer("Same"))
 
     def correct_answer(self, type_of_answer):
+        #Checks what type of answer the guess is and checks accordingly whether or not it's the correct answer. Here it returns a string, just because that's the most convenient with the way check_answer(), the buttons and the user_guess variable are implemented.
         if type_of_answer == "same country":
             alc_consumption_1 = float(self.current_country_data[f"{self.years[0]}"])
             alc_consumption_2 = float(self.current_country_data[f"{self.years[1]}"])
@@ -83,6 +89,7 @@ class TipsyTriviaGame:
                 return "Higher"
     
     def check_answer(self, user_guess):
+        #Sends a type_of_answer (based on the type of guess as they are distinct for the two types of questions) as a parameter to correct_answer(). Checks if the string sent by the button is the same as the string correct_answer() returns for each type of answer respectively. Only shows a dialog box if the guess is correct and both shows a dialog box and drains HP if the guess is wrong. If the HP drops to 0 the game is over, a dialog box is shown and the window is closed.
         if user_guess == "Stayed the same" or user_guess == "Increased" or user_guess == "Decreased":
             if self.correct_answer("same country") == user_guess:
                 messagebox.showinfo("Result", f"Your guess: {user_guess}\nCorrect!")
@@ -107,9 +114,11 @@ class TipsyTriviaGame:
         self.advance_round()
 
     def advance_round(self):
+        #Adds the country that was just played to countries_played so the countries don't repeat and increments the round number.
         self.countries_played.append(self.current_country)
         self.round_number += 1
 
+        #First if-block executes if the round is even-numbered (every other round), second executes on odd numbers. Even-numbered rounds show two countries, so the last_country variable is defined to carry over the country that was last introduced to the next round. Then a new country is selected. A current and last_country_data variable is defined for readability's sake. The buttons are hidden and shown respectively. Could end up with a memory leak? Unsure how Tkinter handles this. 
         if (self.round_number % 2 == 0):
             self.last_country = self.current_country 
             self.last_country_data = csv_data[self.last_country]
@@ -126,6 +135,8 @@ class TipsyTriviaGame:
             self.lower_button.pack(pady=5)
             self.same_button.pack(pady=5)
         else:
+            self.years = self.select_years(self.difficulty)
+
             self.prompt_label.config(text=f"Round {self.round_number}: Guess if alcohol consumption in {self.current_country} has increased, decreased or stayed the same from {self.years[0]} to {self.years[1]}.")
 
             self.higher_button.pack_forget()
@@ -143,30 +154,36 @@ class TipsyTriviaGame:
     def select_years(self, difficulty):
         self.current_country_data = csv_data[self.current_country]
         if difficulty == "easy":
+            #Selects the first and last year from that country's data.
             year_1, *_ = self.current_country_data.keys()
             year_2, *_ = reversed(self.current_country_data.keys())
         elif difficulty == "medium":
+            #Selects the first year in the dataset and the third last element, in most cases resulting in an interval of 3x5 years. Some countries only have data for 3 or 2 years, in which case the second if-test fires and tightens the interval to one where it would fit the data. This is a rather extreme edge case (one country in the dataset only has data for 2 years) and so further optimizations have not been done.
             year_1 = list(self.current_country_data.keys())[0]
             year_2 = list(self.current_country_data.keys())[-3]
             if year_1 == year_2:
                 year_1 = list(self.current_country_data.keys())[0]
                 year_2 = list(self.current_country_data.keys())[-1]
         else:
+            #Selects a random year from the data, tries to select the year above this year in the data, and if that fails (out of index), lower the first year and select the year above that one.
             year_1 = remove_chars(str(random.sample(list(self.current_country_data.keys()), 1)), "[']")
             try:
                 year_2 = list(self.current_country_data.keys())[list(self.current_country_data.keys()).index(f"{year_1}")+1]
             except IndexError:
                 year_1 = list(self.current_country_data.keys())[list(self.current_country_data.keys()).index(f"{year_1}")-1]
                 year_2 = list(self.current_country_data.keys())[list(self.current_country_data.keys()).index(f"{year_1}")+1]
-                
+        #Returns the years in a tuple with the outer characters removed.        
         return remove_chars(year_1, "[']"), remove_chars(year_2, "[']")
         
     def set_difficulty(self, difficulty):
+        #Saves the difficulty in a variable
         self.difficulty = difficulty
         self.game_init(root)
 
     def select_new_country(self):
+        #Selects new country by only using the keys (countries) of the data, which is a dictionary.  
         current_country = remove_chars(str(random.sample(list(csv_data.keys()), 1)), "'[]")
+        #Selects new country if the country is in the countries_played list
         while current_country in self.countries_played:
             current_country = remove_chars(str(random.sample(list(csv_data.keys()), 1)), "'[]")
         return current_country
