@@ -5,11 +5,11 @@ from Remove_Chars import remove_chars
 import random
 csv_data = lese_inn("alc_consumption_liters_per_capita.csv")
 
-
 class TipsyTriviaGame:
     def __init__(self, root):
         self.root = root
-        self.root.title("Tipsy Trends Trivia")
+        self.root.title("Tipsy Trivia")
+        self.root.geometry("700x300")
 
         self.score = 0
         self.round_number = 1
@@ -18,10 +18,10 @@ class TipsyTriviaGame:
         self.countries_played = []
         self.player_hp = 5
 
-        self.label = tk.Label(root, text="Welcome to Tipsy Trends!")
+        self.label = tk.Label(root, text="Welcome to Tipsy Trivia!")
         self.label.pack(pady=10)
 
-        self.prompt_label = tk.Label(root, text=f"Guess if alcohol consumption in different countries have increased, decreased, or remained the same in a given interval. Difficulties represent the width of the intervals, where harder difficulties mean smaller intervals.")
+        self.prompt_label = tk.Label(root, text=f"Guess if alcohol consumption in different countries have increased, decreased, or remained the same in a given interval. \nDifficulties represent the width of the intervals, where harder difficulties mean smaller intervals.")
         self.prompt_label.pack(pady=10)
 
         self.easy_button = tk.Button(root, text="Easy", command=lambda: self.set_difficulty("easy"))
@@ -46,6 +46,7 @@ class TipsyTriviaGame:
         self.health_label = tk.Label(root, text=f"Your HP: {self.player_hp}")
         self.health_label.pack(pady=5)
 
+        self.label.config(text="Tipsy Trivia")
         self.prompt_label.config(text=f"Round {self.round_number}: Guess if alcohol consumption in {self.current_country} has increased, decreased or stayed the same from {self.years[0]} to {self.years[1]}.")
 
         self.increase_button = tk.Button(root, text="Increased", command=lambda: self.check_answer("Increased"))
@@ -89,7 +90,7 @@ class TipsyTriviaGame:
                 messagebox.showinfo("Result", f"Your guess: {user_guess}\nIncorrect!")
                 self.player_hp -= 1
                 if self.player_hp <= 0:
-                    messagebox.showinfo("Game Over", "You ran out of health. Game over!")
+                    messagebox.showinfo("Game Over", f"You ran out of health. You got {self.round_number-5} questions correct!")
                     self.root.destroy()
                     return
         elif user_guess == "Same" or user_guess == "Lower" or user_guess == "Higher":
@@ -159,7 +160,6 @@ class TipsyTriviaGame:
                 year_2 = list(self.current_country_data.keys())[list(self.current_country_data.keys()).index(f"{year_1}")+1]
                 
         return remove_chars(year_1, "[']"), remove_chars(year_2, "[']")
-        
         
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
